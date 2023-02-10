@@ -39,6 +39,7 @@ void cspace_single_level_destroy(struct allocman *alloc, cspace_single_level_t *
 int _cspace_single_level_alloc(struct allocman *alloc, void *_cspace, cspacepath_t *slot);
 int _cspace_single_level_alloc_at(struct allocman *alloc, void *_cspace, seL4_CPtr slot);
 void _cspace_single_level_free(struct allocman *alloc, void *_cspace, const cspacepath_t *slot);
+int _cspace_single_level_alloc_contigious(struct allocman *alloc, void *_cspace, size_t num, cspacepath_t *slot);
 
 static inline cspacepath_t _cspace_single_level_make_path(void *_cspace, seL4_CPtr slot)
 {
@@ -59,6 +60,7 @@ static inline cspace_interface_t cspace_single_level_make_interface(cspace_singl
         .alloc = _cspace_single_level_alloc,
         .free = _cspace_single_level_free,
         .make_path = _cspace_single_level_make_path,
+        .alloc_contigious = _cspace_single_level_alloc_contigious, 
         /* We do not want to handle recursion, as it shouldn't happen */
         .properties = ALLOCMAN_DEFAULT_PROPERTIES,
         .cspace = cspace

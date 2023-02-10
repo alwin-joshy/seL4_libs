@@ -39,6 +39,22 @@ static int am_vka_cspace_alloc(void *data, seL4_CPtr *res)
     return error;
 }
 
+
+static int am_vka_cspace_alloc_contig(void *data, size_t num, seL4_CPtr *res)
+{
+    int error;
+    cspacepath_t path;
+
+    assert(data);
+    assert(res);
+
+    error = allocman_cspace_alloc_contig((allocman_t *) data, num, &path);
+    if (!error) {
+        *res = path.capPtr;
+    }
+
+    return error; 
+}
 /**
  * Convert an allocated cptr to a cspacepath, for use in
  * operations such as Untyped_Retype
@@ -186,6 +202,7 @@ void allocman_make_vka(vka_t *vka, allocman_t *alloc)
 
     vka->data = alloc;
     vka->cspace_alloc = &am_vka_cspace_alloc;
+    vka->cspace_alloc_contigious = &am_vka_cspace_alloc_contig;
     vka->cspace_make_path = &am_vka_cspace_make_path;
     vka->utspace_alloc = &am_vka_utspace_alloc;
     vka->utspace_alloc_maybe_device = &am_vka_utspace_alloc_maybe_device;

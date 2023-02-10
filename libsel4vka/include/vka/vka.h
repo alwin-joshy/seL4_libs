@@ -28,6 +28,8 @@
  */
 typedef int (*vka_cspace_alloc_fn)(void *data, seL4_CPtr *res);
 
+typedef int (*vka_cspace_alloc_contig_fn)(void *data, size_t num, seL4_CPtr *res);
+
 /**
  * Convert an allocated cptr to a cspacepath, for use in
  * operations such as Untyped_Retype
@@ -124,6 +126,7 @@ typedef uintptr_t (*vka_utspace_paddr_fn)(void *data, seL4_Word target, seL4_Wor
 typedef struct vka {
     void *data;
     vka_cspace_alloc_fn cspace_alloc;
+    vka_cspace_alloc_contig_fn cspace_alloc_contigious;
     vka_cspace_make_path_fn cspace_make_path;
     vka_utspace_alloc_fn utspace_alloc;
     vka_utspace_alloc_maybe_device_fn utspace_alloc_maybe_device;
@@ -151,6 +154,25 @@ static inline int vka_cspace_alloc(vka_t *vka, seL4_CPtr *res)
     }
 
     return vka->cspace_alloc(vka->data, res);
+}
+
+static inline int vka_cspace_alloc_contigious(vka_t *vka, size_t num, seL4_CPtr *res) {
+        if (!vka) {
+        ZF_LOGE("vka is NULL");
+        return -1;
+    }
+
+    if (!res) {
+        ZF_LOGE("res is NULL");
+        return -1;
+    }
+
+    if (!vka->cspace_alloc) {
+        ZF_LOGE("Unimplemented");
+        return -1;
+    }
+
+    return vka->cspace_alloc_contigious(vka->data, num, res);
 }
 
 static inline void vka_cspace_make_path(vka_t *vka, seL4_CPtr slot, cspacepath_t *res)

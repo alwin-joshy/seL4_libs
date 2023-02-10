@@ -109,6 +109,7 @@ static int cspace_alloc(void *data, seL4_CPtr *res)
 {
     assert(data != NULL);
 
+    assert(0);
     state_t *s = (state_t *)data;
     vka_t *v = s->underlying;
     int result = v->cspace_alloc(v->data, res);

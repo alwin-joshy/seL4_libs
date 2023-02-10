@@ -71,6 +71,44 @@ int _cspace_single_level_alloc(allocman_t *alloc, void *_cspace, cspacepath_t *s
     return 0;
 }
 
+int _cspace_single_level_alloc_contigious(allocman_t *alloc, void *_cspace, size_t num, cspacepath_t *slot) {
+    cspace_single_level_t *cspace = (cspace_single_level_t*)_cspace;
+    size_t index = 0, start = 0, count = 0;
+
+    /* Iterate through the cspace slot by slot*/
+    while (index / BITS_PER_WORD < cspace->bitmap_length) {
+        /* If the slot is not free */
+        if ( (cspace->bitmap[index / BITS_PER_WORD] & BIT(index % BITS_PER_WORD)) == 0) {
+            count = 0; 
+        } else { /* If the slot is free */
+            if (!count) {
+                start = index;
+            }
+            count++;
+        }
+
+        /* If we have found enough consecutive empty slots */
+        if (count == num) {
+            break; 
+        } 
+        index++;
+    }
+
+    /* If the cspace does not have a suitable contigious subsection of the specified size */
+    if (count != num) {
+        return 1; 
+    }
+
+    /* Change all of the slots to allocated - this can definitely be much better optimized */
+    for (int i = 0 ; i < num; i++) {
+        _cspace_single_level_alloc_at(alloc, _cspace, start + i + cspace->config.first_slot);
+    }
+
+    /* Return the start of the allocated range */
+    *slot = _cspace_single_level_make_path(_cspace, cspace->config.first_slot + (((start / BITS_PER_WORD) * BITS_PER_WORD) + start % BITS_PER_WORD));
+    return 0;
+}
+
 int _cspace_single_level_alloc_at(allocman_t *alloc, void *_cspace, seL4_CPtr slot) {
     cspace_single_level_t *cspace = (cspace_single_level_t*)_cspace;
     size_t index = slot - cspace->config.first_slot;

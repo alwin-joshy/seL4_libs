@@ -255,6 +255,25 @@ static int _allocman_cspace_alloc(allocman_t *alloc, cspacepath_t *slot, int use
     }
 }
 
+static int _allocman_cspace_alloc_contig(allocman_t *alloc, size_t num, cspacepath_t *slot, int use_watermark) {
+    int root_op;
+    int error; 
+
+    if (!alloc->have_cspace) {
+        return 1;
+    }
+
+    if (!_can_alloc(alloc->cspace.properties, alloc->cspace_alloc_depth, alloc->cspace_free_depth)) {
+        return 1; 
+    }
+
+    root_op = _start_operation(alloc);
+    alloc->cspace_alloc_depth++;
+    error = alloc->cspace.alloc_contigious(alloc, alloc->cspace.cspace, num, slot);
+    _end_operation(alloc, root_op);
+    return error; 
+}
+
 static seL4_Word _allocman_utspace_alloc(allocman_t *alloc, size_t size_bits, seL4_Word type, const cspacepath_t *path, uintptr_t paddr, bool canBeDev, int *_error, int use_watermark)
 {
     int root_op;
@@ -313,6 +332,12 @@ int allocman_cspace_alloc(allocman_t *alloc, cspacepath_t *slot)
 {
     return _allocman_cspace_alloc(alloc, slot, 1);
 }
+
+int allocman_cspace_alloc_contig(allocman_t *alloc, size_t num, cspacepath_t *slot)
+{
+    return _allocman_cspace_alloc_contig(alloc, num, slot, 1);
+}
+
 
 seL4_Word allocman_utspace_alloc_at(allocman_t *alloc, size_t size_bits, seL4_Word type, const cspacepath_t *path, uintptr_t paddr, bool canBeDev, int *_error)
 {

@@ -185,6 +185,9 @@ void allocman_mspace_free(allocman_t *alloc, void *ptr, size_t bytes);
  */
 int allocman_cspace_alloc(allocman_t *alloc, cspacepath_t *slot);
 
+int allocman_cspace_alloc_contig(allocman_t *alloc, size_t num, cspacepath_t *slot);
+
+
 /**
  * Frees a cslot from the allocator, as previously allocated by {@link #allocman_cspace_alloc}.
  * To avoid the need to keep cspacepath_t's laying around, it is guaruanteed that
